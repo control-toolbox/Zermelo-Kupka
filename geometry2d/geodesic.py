@@ -15,7 +15,8 @@ class Geodesic():
         return np.array(self.problem.geodesic(t, α0))
     
     # Function to plot one given geodesic or a list of geodesics
-    def plot_2d(self, geodesics, *, color=None, linewidth=None, zorder=None, figure=None):
+    def plot_2d(self, geodesics, *, color=None, linewidth=None, zorder=None, figure=None, 
+                dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_2d__):
         
         # initialize the parameters
         if color is None:
@@ -27,7 +28,7 @@ class Geodesic():
         
         # initialize the figure
         if figure is None:
-            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point)
+            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point, dpi=dpi, figsize=figsize)
 
         # check if geodesics is a list
         if not isinstance(geodesics, list):
@@ -51,7 +52,9 @@ class Geodesic():
     # Function to plot one given geodesic or a list of geodesics
     def plot_3d(self, geodesics, *, 
                 elevation=geometry2d.plottings.elevation__,
-                azimuth=geometry2d.plottings.azimuth__, color=None, linewidth=None, zorder=None, figure=None):
+                azimuth=geometry2d.plottings.azimuth__,
+                color=None, linewidth=None, zorder=None, figure=None, 
+                dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_3d__):
         
         # initialize the parameters
         if color is None:
@@ -66,7 +69,7 @@ class Geodesic():
             figure = geometry2d.plottings.init_figure_3d(self.problem.epsilon, 
                                                     self.problem.initial_point,
                                                     elevation,
-                                                    azimuth)
+                                                    azimuth, dpi=dpi, figsize=figsize)
 
         # check if geodesics is a list
         if not isinstance(geodesics, list):
@@ -140,7 +143,7 @@ class Geodesic():
              view=geometry2d.plottings.Coords.SPHERE, 
              azimuth=geometry2d.plottings.azimuth__, 
              elevation=geometry2d.plottings.elevation__, 
-             color=None, linewidth=None, zorder=None, figure=None):
+             color=None, linewidth=None, zorder=None, figure=None, dpi=None, figsize=None):
         
         # error if alphas is not None and N is not None
         if (not alphas is None) and (not N is None):
@@ -165,6 +168,13 @@ class Geodesic():
             linewidth = self.linewidth
         if zorder is None:
             zorder = self.zorder
+        if dpi is None:
+            dpi = geometry2d.plottings.dpi__
+        if figsize is None:
+            if view == geometry2d.plottings.Coords.SPHERE:
+                figsize = geometry2d.plottings.figsize_3d__
+            elif view == geometry2d.plottings.Coords.PLANE:
+                figsize = geometry2d.plottings.figsize_2d__
         
         # tf is either a fixed value or a function of α0
         if tf is None:
@@ -178,9 +188,12 @@ class Geodesic():
         # if N = 0, then return the figure
         if N == 0:
             if view == geometry2d.plottings.Coords.SPHERE:
-                return self.plot_3d([], elevation=elevation, azimuth=azimuth, color=color, linewidth=linewidth, zorder=zorder)
+                return self.plot_3d([], elevation=elevation, azimuth=azimuth,
+                    color=color, linewidth=linewidth, zorder=zorder,
+                    figure=figure, dpi=dpi, figsize=figsize)
             elif view == geometry2d.plottings.Coords.PLANE:
-                return self.plot_2d([], color=color, linewidth=linewidth, zorder=zorder) 
+                return self.plot_2d([], color=color, linewidth=linewidth, zorder=zorder,
+                    figure=figure, dpi=dpi, figsize=figsize) 
         
         # computation of the geodesics
         geodesics = {}
@@ -205,23 +218,13 @@ class Geodesic():
         list_time   = geodesics['time']
         list_α0     = geodesics['α0']
         
-        # # create the list of geodesics to the right time
-        # list_geodesics_to_plot = list([])
-        
-        # # plot the geodesics
-        # indices_geo  = range(0, len(list_time))
-        # for i in indices_geo :
-        #     q    = list_state[i]
-        #     nnq = len(q[:,0])
-        #     nnp = int(nnq * length)
-        #     p   = np.array([q[j, :] for j in range(0, nnp)]) # get the part to plot
-        #     if nnp>0:
-        #         list_geodesics_to_plot.append(p)
-
+        #
         list_geodesics_to_plot = list_state
 
         if view == geometry2d.plottings.Coords.SPHERE:
             return self.plot_3d(list_geodesics_to_plot, elevation=elevation, azimuth=azimuth, 
-                         color=color, linewidth=linewidth, zorder=zorder, figure=figure)
+                         color=color, linewidth=linewidth, zorder=zorder, 
+                         figure=figure, dpi=dpi, figsize=figsize)
         elif view == geometry2d.plottings.Coords.PLANE:
-            return self.plot_2d(list_geodesics_to_plot, color=color, linewidth=linewidth, zorder=zorder, figure=figure)
+            return self.plot_2d(list_geodesics_to_plot, color=color, linewidth=linewidth, zorder=zorder, 
+                                figure=figure, dpi=dpi, figsize=figsize)

@@ -175,7 +175,8 @@ class WaveFront():
             # return
             return wavefront
         
-    def plot_2d(self, wavefront_loci, *, color=None, linewidth=None, zorder=None, figure=None):
+    def plot_2d(self, wavefront_loci, *, color=None, linewidth=None, zorder=None, figure=None,
+                dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_2d__):
         
         # initialize the parameters
         if color is None:
@@ -187,7 +188,7 @@ class WaveFront():
         
         # initialize the figure
         if figure is None:
-            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point)
+            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point, dpi=dpi, figsize=figsize)
             
         # check if wavefront_loci is a list
         if not isinstance(wavefront_loci, list):
@@ -211,7 +212,8 @@ class WaveFront():
     def plot_3d(self, wavefront_loci, *,
                 elevation=geometry2d.plottings.elevation__,
                 azimuth=geometry2d.plottings.azimuth__, 
-                color=None, linewidth=None, zorder=None, figure=None):
+                color=None, linewidth=None, zorder=None, figure=None,
+                dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_3d__):
         
         # initialize the parameters
         if color is None:
@@ -226,7 +228,7 @@ class WaveFront():
             figure = geometry2d.plottings.init_figure_3d(self.problem.epsilon, 
                                                     self.problem.initial_point,
                                                     elevation,
-                                                    azimuth)
+                                                    azimuth, dpi=dpi, figsize=figsize)
             
         # check if wavefront_loci is a list
         if not isinstance(wavefront_loci, list):
@@ -252,7 +254,7 @@ class WaveFront():
             view=geometry2d.plottings.Coords.SPHERE, 
             elevation=geometry2d.plottings.elevation__,
             azimuth=geometry2d.plottings.azimuth__, 
-            color=None, linewidth=None, zorder=None, figure=None):
+            color=None, linewidth=None, zorder=None, figure=None, dpi=None, figsize=None):
         
         # if there is no wavefront at tf then raise an error
         if not self.exists_from_tf(tf):
@@ -267,6 +269,14 @@ class WaveFront():
         elif not (isinstance(labels, list) or isinstance(labels, np.ndarray) or isinstance(labels, tuple)):
             labels = [labels]
             
+        if dpi is None:
+            dpi = geometry2d.plottings.dpi__
+        if figsize is None:
+            if view == geometry2d.plottings.Coords.SPHERE:
+                figsize = geometry2d.plottings.figsize_3d__
+            elif view == geometry2d.plottings.Coords.PLANE:
+                figsize = geometry2d.plottings.figsize_2d__
+                
         # check if there are both 'left' and 'right' in the labels
         left_right_in_labels_and_SPHERE = ('left' in labels) and ('right' in labels) and \
                                             (view == geometry2d.plottings.Coords.SPHERE)
@@ -282,7 +292,8 @@ class WaveFront():
             # plot
             figure = self.plot_3d([{'label':'default', 'locus':wavefront_locus}], 
                                     elevation=elevation, azimuth=azimuth, 
-                                    color=color, linewidth=linewidth, zorder=zorder, figure=figure)
+                                    color=color, linewidth=linewidth, zorder=zorder, 
+                                    figure=figure, dpi=dpi, figsize=figsize)
                 
         # iterates over the labels and create a list of wavefronts
         wavefronts_loci = []
@@ -296,10 +307,12 @@ class WaveFront():
         if view == geometry2d.plottings.Coords.SPHERE:
             figure = self.plot_3d(wavefronts_loci, 
                                    elevation=elevation, azimuth=azimuth, 
-                                   color=color, linewidth=linewidth, zorder=zorder, figure=figure)
+                                   color=color, linewidth=linewidth, zorder=zorder, 
+                                   figure=figure, dpi=dpi, figsize=figsize)
         elif view == geometry2d.plottings.Coords.PLANE:
             figure = self.plot_2d(wavefronts_loci, 
-                                   color=color, linewidth=linewidth, zorder=zorder, figure=figure)
+                                   color=color, linewidth=linewidth, zorder=zorder, 
+                                   figure=figure, dpi=dpi, figsize=figsize)
         else:
             raise ValueError('The view is not valid.')
         

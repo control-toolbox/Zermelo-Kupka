@@ -161,7 +161,8 @@ class Conjugate():
             
         
     # function to plot one or more conjugate loci
-    def plot_2d(self, conjugate_loci, *, color=None, linewidth=None, zorder=None, figure=None):
+    def plot_2d(self, conjugate_loci, *, color=None, linewidth=None, zorder=None, figure=None,
+        dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_2d__):
         
         # initialize the parameters
         if color is None:
@@ -173,7 +174,7 @@ class Conjugate():
         
         # initialize the figure
         if figure is None:
-            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point)
+            figure = geometry2d.plottings.init_figure_2d(self.problem.initial_point, dpi=dpi, figsize=figsize)
 
         # check if conjugate_loci is a list of geometry2d.problem.ConjugateLocus
         if not isinstance(conjugate_loci, list):
@@ -198,7 +199,8 @@ class Conjugate():
                 elevation=geometry2d.plottings.elevation__,
                 azimuth=geometry2d.plottings.azimuth__, 
                 color=None, linewidth=None, zorder=None,
-                plot_surface=False, color_surface=None, alpha_surface=None, zorder_surface=None, figure=None):
+                plot_surface=False, color_surface=None, alpha_surface=None, zorder_surface=None, 
+                figure=None, dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_3d__):
         
         # initialize the parameters
         if color is None:
@@ -219,7 +221,7 @@ class Conjugate():
             figure = geometry2d.plottings.init_figure_3d(self.problem.epsilon, 
                                                     self.problem.initial_point,
                                                     elevation,
-                                                    azimuth)
+                                                    azimuth, dpi=dpi, figsize=figsize)
         
         # check if conjugate_loci is a list
         if not isinstance(conjugate_loci, list):
@@ -252,7 +254,8 @@ class Conjugate():
             elevation=geometry2d.plottings.elevation__,
             azimuth=geometry2d.plottings.azimuth__, 
             color=None, linewidth=None, zorder=None,
-            plot_surface=None, color_surface=None, alpha_surface=None, zorder_surface=None, figure=None):
+            plot_surface=None, color_surface=None, alpha_surface=None, zorder_surface=None, figure=None,
+            dpi=None, figsize=None):
         
         # if label is None, we plot all the saved conjugate loci
         if labels is None:
@@ -260,6 +263,14 @@ class Conjugate():
         # check if labels is a list
         elif not (isinstance(labels, list) or isinstance(labels, np.ndarray) or isinstance(labels, tuple)):
             labels = [labels]
+
+        if dpi is None:
+            dpi = geometry2d.plottings.dpi__
+        if figsize is None:
+            if view == geometry2d.plottings.Coords.SPHERE:
+                figsize = geometry2d.plottings.figsize_3d__
+            elif view == geometry2d.plottings.Coords.PLANE:
+                figsize = geometry2d.plottings.figsize_2d__
 
         # check if there are both 'left' and 'right' in the labels
         left_right_in_labels_and_SPHERE = ('left' in labels) and ('right' in labels) and \
@@ -288,7 +299,7 @@ class Conjugate():
                                     color=color, linewidth=linewidth, zorder=zorder,
                                     plot_surface=plot_surface_left_right, color_surface=color_surface, 
                                     alpha_surface=alpha_surface, zorder_surface=zorder_surface, 
-                                    figure=figure)
+                                    figure=figure, dpi=dpi, figsize=figsize)
 
         # iterate over the labels and create a list of the conjugate loci
         conjugate_loci = []
@@ -305,11 +316,11 @@ class Conjugate():
                                   color=color, linewidth=linewidth, zorder=zorder,
                                   plot_surface=plot_surface, color_surface=color_surface, 
                                   alpha_surface=alpha_surface, zorder_surface=zorder_surface, 
-                                  figure=figure)
+                                  figure=figure, dpi=dpi, figsize=figsize)
         elif view == geometry2d.plottings.Coords.PLANE:
             figure = self.plot_2d(conjugate_loci, 
                                   color=color, linewidth=linewidth, zorder=zorder, 
-                                  figure=figure)
+                                  figure=figure, dpi=dpi, figsize=figsize)
         else:
             raise ValueError('The view must be either SPHERE or PLANE.')
 

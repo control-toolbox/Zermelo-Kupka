@@ -28,6 +28,11 @@ elevation__ = -10
 azimuth__ = 20
 dist__ = 10
 
+# figure parameters
+dpi__ = 200
+figsize_2d__ = (3,3)
+figsize_3d__ = (2,2)
+
 #
 alpha_sphere = 0.4
 
@@ -49,31 +54,6 @@ def get_cam(elev, azimuth, dist):
     sa   = np.sin(2*np.pi*azimuth/360)
     cam  = np.array([ dist*ca*ce, dist*sa*ce, dist*se])
     return cam
-
-def plot3d(ax, x, y, z, azimuth, color, linewidth, linestyle='solid', zorder=1):
-    N = len(x)
-    i = 0
-    j = 1
-    cam = get_cam(elevation__, azimuth, dist__)
-    ps = x[0]*cam[0]+y[0]*cam[1]+z[0]*cam[2]
-    while i<N-1:
-        ps_j = x[j]*cam[0]+y[j]*cam[1]+z[j]*cam[2]
-        if (ps*ps_j<0) or (j==N-1):
-            if ps>0:
-                ls = linestyle
-                lw = linewidth/3.0
-                al = 0.5
-                zo = zorder - delta_zo_back
-            else:
-                ls = linestyle
-                lw = linewidth
-                al = 1.0
-                zo = zorder
-            ax.plot(x[i:j+1], y[i:j+1], z[i:j+1], color=color, \
-                    linewidth=lw, linestyle=ls, zorder=zo, alpha=al)
-            i = j
-            ps = ps_j
-        j = j+1
     
 def decorate_2d(ax, q0=None):
     
@@ -99,10 +79,11 @@ def decorate_2d(ax, q0=None):
         ax.plot(θ, φ, marker="o", markersize=2, 
                 markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
         
-def init_figure_2d(q0=None):
+def init_figure_2d(q0=None, *, dpi=dpi__, figsize=figsize_2d__):
     
-    fig = Figure(dpi=200)
-    fig.set_figwidth(3)
+    fig = Figure(dpi=dpi)
+    fig.set_figwidth(figsize[0])
+    fig.set_figheight(figsize[1])
     fig.patch.set_alpha(0.0)
     ax  = fig.add_subplot(111)
     ax.patch.set_alpha(0.0)
@@ -112,6 +93,32 @@ def init_figure_2d(q0=None):
 def plot_2d(fig, θ, φ, *, color='b', linewidth=0.5, zorder=1):
     ax = fig.axes[0]
     ax.plot(θ, φ, color=color, linewidth=linewidth, zorder=zorder)
+
+def plot3d(ax, x, y, z, elevation, azimuth, color, linewidth, linestyle='solid', zorder=1):
+    N = len(x)
+    i = 0
+    j = 1
+
+    cam = get_cam(elevation, azimuth, dist__)
+    ps = x[0]*cam[0]+y[0]*cam[1]+z[0]*cam[2]
+    while i<N-1:
+        ps_j = x[j]*cam[0]+y[j]*cam[1]+z[j]*cam[2]
+        if (ps*ps_j<0) or (j==N-1):
+            if ps>0:
+                ls = linestyle
+                lw = linewidth/3.0
+                al = 0.5
+                zo = zorder - delta_zo_back
+            else:
+                ls = linestyle
+                lw = linewidth
+                al = 1.0
+                zo = zorder
+            ax.plot(x[i:j+1], y[i:j+1], z[i:j+1], color=color, \
+                    linewidth=lw, linestyle=ls, zorder=zo, alpha=al)
+            i = j
+            ps = ps_j
+        j = j+1
 
 def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
     
@@ -158,7 +165,7 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
         θ = 0*np.ones(N)
     φ = np.linspace(0, 2*np.pi, N)
     x, y, z = coord3d(θ, φ, epsilon)
-    plot3d(ax, x, y, z, azimuth, color="black", \
+    plot3d(ax, x, y, z, elevation, azimuth, color="black", \
             linewidth=0.5, linestyle="dashed", zorder=z_order_axes)
 
     # add equator
@@ -166,7 +173,7 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
     θ = np.linspace(0, 2*np.pi, N)
     φ = 0*np.ones(N)
     x, y, z = coord3d(θ, φ, epsilon)
-    plot3d(ax, x, y, z, azimuth, color="black", \
+    plot3d(ax, x, y, z, elevation, azimuth, color="black", \
             linewidth=0.5, linestyle="dashed", zorder=z_order_axes)
     
     # Adjustment of the axes, so that they all have the same span:
@@ -185,10 +192,12 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
     # 
     ax.set_aspect('equal', 'box')   
 
-def init_figure_3d(epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
+def init_figure_3d(epsilon, q0=None, elevation=elevation__, azimuth=azimuth__, *, 
+                   dpi=dpi__, figsize=figsize_3d__):
     
-    fig = Figure(dpi=200)
-    fig.set_figwidth(2)
+    fig = Figure(dpi=dpi)
+    fig.set_figwidth(figsize[0])
+    fig.set_figheight(figsize[1])
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
     fig.patch.set_alpha(0.0)
     ax = fig.add_subplot(111, projection='3d')
