@@ -4,10 +4,10 @@ import numpy as np
 
 class WaveFront():
     
-    def __init__(self, problem, data=None):
+    def __init__(self, problem):
         
         self.problem = problem
-        self.data    = data
+        self.data    = problem.data
         self.data_name = 'wavefront'
         self.label_default = 'default'
         self.color = 'g'
@@ -205,7 +205,9 @@ class WaveFront():
             φ = r - np.pi/2
             
             # plot the wavefront_loci
-            geometry2d.plottings.plot_2d(figure, θ, φ, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_2d(figure, θ,         φ, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
             
         return figure
     

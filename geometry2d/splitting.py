@@ -4,10 +4,10 @@ import scipy
 
 class Splitting():
     
-    def __init__(self, problem, data=None):
+    def __init__(self, problem):
         
         self.problem = problem
-        self.data = data
+        self.data = problem.data
         self.data_name = 'splitting'
         self.label_default = 'default'
         self.color = 'k'
@@ -176,7 +176,8 @@ class Splitting():
         
         return splitting_time__
             
-    def plot_2d(self, splitting_loci, *, color=None, linewidth=None, zorder=None, figure=None,
+    def plot_2d(self, splitting_loci, *, color=None, linewidth=None, zorder=None, 
+                figure=None, linestyle='solid',
                 dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_2d__):
         
         # initialize the parameters
@@ -205,15 +206,18 @@ class Splitting():
             θ = splitting_locus.states[:, 1]
             φ = r - np.pi/2
             
-            # plot the splitting locus
-            geometry2d.plottings.plot_2d(figure, θ, φ, color=color, linewidth=linewidth, zorder=zorder)
+            # plot the splitting locus            
+            geometry2d.plottings.plot_2d(figure, θ,         φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
         
         return figure
  
     def plot_3d(self, splitting_loci, *,
                 elevation=geometry2d.plottings.elevation__,
                 azimuth=geometry2d.plottings.azimuth__, 
-                color=None, linewidth=None, zorder=None, figure=None,
+                color=None, linewidth=None, zorder=None, linestyle='solid',
+                figure=None,
                 dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_3d__):
         
         # initialize the parameters
@@ -247,7 +251,8 @@ class Splitting():
             
             # plot the splitting locus
             x, y, z = geometry2d.plottings.coord3d(θ, φ, self.problem.epsilon)
-            geometry2d.plottings.plot_3d(figure, x, y, z, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_3d(figure, x, y, z, color=color, linewidth=linewidth, 
+                                         zorder=zorder, linestyle=linestyle)
             
         return figure    
     
@@ -255,7 +260,8 @@ class Splitting():
             view=geometry2d.plottings.Coords.SPHERE, 
             elevation=geometry2d.plottings.elevation__,
             azimuth=geometry2d.plottings.azimuth__, 
-            color=None, linewidth=None, zorder=None, figure=None, dpi=None, figsize=None):
+            color=None, linewidth=None, zorder=None, linestyle='solid',
+            figure=None, dpi=None, figsize=None):
         
         # if label is None, we plot all the saved splitting loci
         if labels is None:
@@ -295,7 +301,7 @@ class Splitting():
             figure = self.plot_3d(splitting_locus, 
                                     elevation=elevation, azimuth=azimuth, 
                                     color=color, linewidth=linewidth, zorder=zorder,
-                                    figure=figure, dpi=dpi, figsize=figsize)
+                                    figure=figure, dpi=dpi, figsize=figsize, linestyle=linestyle)
 
         # iterate over the labels and create a list of the splitting loci
         splitting_loci = []
@@ -311,11 +317,11 @@ class Splitting():
             figure = self.plot_3d(splitting_loci, 
                                   elevation=elevation, azimuth=azimuth, 
                                   color=color, linewidth=linewidth, zorder=zorder,
-                                  figure=figure, dpi=dpi, figsize=figsize)
+                                  figure=figure, dpi=dpi, figsize=figsize, linestyle=linestyle)
         elif view == geometry2d.plottings.Coords.PLANE:
             figure = self.plot_2d(splitting_loci, 
                                   color=color, linewidth=linewidth, zorder=zorder, 
-                                  figure=figure, dpi=dpi, figsize=figsize)
+                                  figure=figure, dpi=dpi, figsize=figsize, linestyle=linestyle)
         else:
             raise ValueError('The view must be either SPHERE or PLANE.')
 

@@ -15,7 +15,7 @@ class Geodesic():
         return np.array(self.problem.geodesic(t, α0))
     
     # Function to plot one given geodesic or a list of geodesics
-    def plot_2d(self, geodesics, *, color=None, linewidth=None, zorder=None, figure=None, 
+    def plot_2d(self, geodesics, *, color=None, linewidth=None, zorder=None, linestyle='solid', figure=None, 
                 dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_2d__):
         
         # initialize the parameters
@@ -45,7 +45,9 @@ class Geodesic():
             φ = r - np.pi/2
             
             # plot the geodesic
-            geometry2d.plottings.plot_2d(figure, θ, φ, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_2d(figure, θ,         φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
         
         return figure
             
@@ -53,7 +55,7 @@ class Geodesic():
     def plot_3d(self, geodesics, *, 
                 elevation=geometry2d.plottings.elevation__,
                 azimuth=geometry2d.plottings.azimuth__,
-                color=None, linewidth=None, zorder=None, figure=None, 
+                color=None, linewidth=None, zorder=None, linestyle='solid', figure=None, 
                 dpi=geometry2d.plottings.dpi__, figsize=geometry2d.plottings.figsize_3d__):
         
         # initialize the parameters
@@ -86,12 +88,11 @@ class Geodesic():
             
             #
             x, y, z = geometry2d.plottings.coord3d(θ, φ, self.problem.epsilon)
-            geometry2d.plottings.plot_3d(figure, x, y, z, color=color, linewidth=linewidth, zorder=zorder)
+            geometry2d.plottings.plot_3d(figure, x, y, z, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
             
         return figure
     
-    # compute the time to return to the equator
-    def return_to_equator(self, α0):
+    def return_to_equator__(self, α0, *, first=True):
 
         #
         def Hvec(t, z):
@@ -100,17 +101,27 @@ class Geodesic():
         # equator: r = π/2
         v0 = Hvec(0, self.problem.initial_cotangent_point(α0))
         s  = np.sign(v0[0])
+        if first:
+            s = -s
         if s == 0:
             s = np.sign(v0[1])
         def hit_equator(t, z):
-            if np.abs(α0 % (2*np.pi) - np.pi/2) <= 1e-8: # going up
-                return z[0] - (np.pi-1e-3) # we stop before north/south pole
-            elif np.abs(α0 % (2*np.pi) - 3*np.pi/2) <= 1e-8: # going down
-                return z[0] - (1e-3) # we stop before north/south pole
-            elif np.abs(α0 % (2*np.pi) - 0) <= 1e-8: # going right
-                return z[1] - np.pi # half turn
-            elif np.abs(α0 % (2*np.pi) - np.pi) <= 1e-8: # going left
-                return -(z[1] - (-np.pi)) # half turn
+            if np.abs(z[0] - np.pi) <= 1e-4:
+                return z[0] - (np.pi-1e-5)
+            elif np.abs(z[0] - 0) <= 1e-4:
+                return z[0] - (1e-5)
+            elif np.abs(z[1] - 5*np.pi) <= 1e-1:
+                return z[1] - 5*np.pi
+            elif np.abs(z[1] - (-5*np.pi)) <= 1e-1:
+                return -(z[1] - (-5*np.pi))
+            # if np.abs(α0 % (2*np.pi) - np.pi/2) <= 1e-8: # going up
+            #     return z[0] - (np.pi-1e-3) # we stop before north/south pole
+            # elif np.abs(α0 % (2*np.pi) - 3*np.pi/2) <= 1e-8: # going down
+            #     return z[0] - (1e-3) # we stop before north/south pole
+            # elif np.abs(α0 % (2*np.pi) - 0) <= 1e-8: # going right
+            #     return z[1] - np.pi # half turn
+            # elif np.abs(α0 % (2*np.pi) - np.pi) <= 1e-8: # going left
+            #     return -(z[1] - (-np.pi)) # half turn
             else:
                 if t > 0:
                     return z[0] - np.pi/2 
@@ -138,12 +149,20 @@ class Geodesic():
             time = sol.t[-1]
 
         return time
+     
+    # compute the time to return to the equator
+    def return_to_equator(self, α0):
+        return self.return_to_equator__(α0, first=False)
+    
+    def first_return_to_equator(self, α0):
+        return self.return_to_equator__(α0, first=True)
     
     def plot(self, *, alphas=None, N=None, tf=None, length=1.0, 
              view=geometry2d.plottings.Coords.SPHERE, 
              azimuth=geometry2d.plottings.azimuth__, 
              elevation=geometry2d.plottings.elevation__, 
-             color=None, linewidth=None, zorder=None, figure=None, dpi=None, figsize=None):
+             color=None, linewidth=None, zorder=None, linestyle='solid',
+             figure=None, dpi=None, figsize=None):
         
         # error if alphas is not None and N is not None
         if (not alphas is None) and (not N is None):
@@ -189,10 +208,10 @@ class Geodesic():
         if N == 0:
             if view == geometry2d.plottings.Coords.SPHERE:
                 return self.plot_3d([], elevation=elevation, azimuth=azimuth,
-                    color=color, linewidth=linewidth, zorder=zorder,
+                    color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle,
                     figure=figure, dpi=dpi, figsize=figsize)
             elif view == geometry2d.plottings.Coords.PLANE:
-                return self.plot_2d([], color=color, linewidth=linewidth, zorder=zorder,
+                return self.plot_2d([], color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle,
                     figure=figure, dpi=dpi, figsize=figsize) 
         
         # computation of the geodesics
@@ -223,8 +242,8 @@ class Geodesic():
 
         if view == geometry2d.plottings.Coords.SPHERE:
             return self.plot_3d(list_geodesics_to_plot, elevation=elevation, azimuth=azimuth, 
-                         color=color, linewidth=linewidth, zorder=zorder, 
+                         color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle,
                          figure=figure, dpi=dpi, figsize=figsize)
         elif view == geometry2d.plottings.Coords.PLANE:
-            return self.plot_2d(list_geodesics_to_plot, color=color, linewidth=linewidth, zorder=zorder, 
+            return self.plot_2d(list_geodesics_to_plot, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle,
                                 figure=figure, dpi=dpi, figsize=figsize)

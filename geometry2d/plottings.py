@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt           # for plots
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D   # for 3D plots
 plt.rcParams.update({"text.usetex":True, "font.family":"sans-serif", "font.sans-serif":["Helvetica"]}) # font properties
+from matplotlib.colors import LightSource
 
 # Kind of coordinates
 class Coords(Enum):
@@ -34,11 +35,11 @@ figsize_2d__ = (3,3)
 figsize_3d__ = (2,2)
 
 #
-alpha_sphere = 0.4
+alpha_sphere = 0.5
 
 # 2D to 3D coordinates
 def coord3d(theta, phi, epsilon):
-    v = theta
+    v = -theta
     u = phi
     coefs = (1., 1., epsilon)                   # Coefficients in (x/a)**2 + (y/b)**2 + (z/c)**2 = 1 
     rx, ry, rz = coefs                          # Radii corresponding to the coefficients
@@ -90,9 +91,9 @@ def init_figure_2d(q0=None, *, dpi=dpi__, figsize=figsize_2d__):
     decorate_2d(ax, q0)
     return fig
 
-def plot_2d(fig, θ, φ, *, color='b', linewidth=0.5, zorder=1):
+def plot_2d(fig, θ, φ, *, color='b', linewidth=0.5, zorder=1, linestyle='solid'):
     ax = fig.axes[0]
-    ax.plot(θ, φ, color=color, linewidth=linewidth, zorder=zorder)
+    ax.plot(θ, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
 
 def plot3d(ax, x, y, z, elevation, azimuth, color, linewidth, linestyle='solid', zorder=1):
     N = len(x)
@@ -135,10 +136,21 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
     y = ry * np.outer(np.cos(u), np.sin(v))
     z = rz * np.outer(np.sin(u), np.ones_like(v))
 
+    # # Landscape
+    # ZSPHERE = z
+
+    # # this is used to set the graph color to blue
+    # blue = np.array([0., 0., 1.])
+    # rgb = np.tile(blue, (ZSPHERE.shape[0], ZSPHERE.shape[1], 1))
+
+    # ls = LightSource()
+    # illuminated_surface = ls.shade_rgb(rgb, ZSPHERE)
+
     # Plot:
     ax.plot_surface(x, y, z,  rstride=1, cstride=1, \
-                    color=(0.99, 0.99, 0.99), alpha=alpha_sphere, \
-                    antialiased=True, zorder=z_order_sphere)
+                    color=(1, 1, 1), linewidth=0,
+                    #color=(1, 1, 0.25), linewidth=0, #facecolors=illuminated_surface,
+                    alpha=alpha_sphere, antialiased=True, edgecolor='none', zorder=z_order_sphere)
 
     # initial point
     if not(q0 is None):
@@ -206,10 +218,7 @@ def init_figure_3d(epsilon, q0=None, elevation=elevation__, azimuth=azimuth__, *
     decorate_3d(ax, epsilon, q0, elevation, azimuth)
     return fig
 
-def plot_3d(fig, x, y, z, *, 
-            color='b', 
-            linewidth=1, 
-            zorder=1):
+def plot_3d(fig, x, y, z, *, color='b', linewidth=1, zorder=1, linestyle='solid'):
     #
     ax = fig.axes[0]
     # get azimuth and elevation
@@ -227,12 +236,12 @@ def plot_3d(fig, x, y, z, *,
         ps_j = x[j]*cam[0]+y[j]*cam[1]+z[j]*cam[2]
         if (ps*ps_j<0) or (j==N-1):
             if ps>0:
-                ls = 'solid'
-                lw = linewidth/3.0
+                ls = linestyle #'solid'
+                lw = linewidth #/2.0
                 al = 0.5
                 zo = zorder - delta_zo_back
             else:
-                ls = 'solid'
+                ls = linestyle #'solid'
                 lw = linewidth
                 al = 1.0
                 zo = zorder
