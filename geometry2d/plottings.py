@@ -13,8 +13,7 @@ class Coords(Enum):
     SPHERE=3  # 3D
     
 # z orders
-zc = 100
-z_order_sphere     = zc; zc = zc+1
+z_order_sphere     = 0;  zc = 100
 z_order_conj_surf  = zc; zc = zc+1
 z_order_axes       = zc; zc = zc+1
 z_order_geodesics  = zc; zc = zc+1
@@ -26,8 +25,8 @@ delta_zo_back = 50
 
 # Parameters for the 3D view
 elevation__ = -10
-azimuth__ = 20
-dist__ = 10
+azimuth__   = 20
+dist__      = 10
 
 # figure parameters
 dpi__ = 200
@@ -109,7 +108,7 @@ def plot3d(ax, x, y, z, elevation, azimuth, color, linewidth, linestyle='solid',
                 ls = linestyle
                 lw = linewidth/3.0
                 al = 0.5
-                zo = zorder - delta_zo_back
+                zo = -zorder
             else:
                 ls = linestyle
                 lw = linewidth
@@ -136,20 +135,20 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
     y = ry * np.outer(np.cos(u), np.sin(v))
     z = rz * np.outer(np.sin(u), np.ones_like(v))
 
-    # # Landscape
-    # ZSPHERE = z
+    # Landscape
+    ZSPHERE = z
 
-    # # this is used to set the graph color to blue
-    # blue = np.array([0., 0., 1.])
-    # rgb = np.tile(blue, (ZSPHERE.shape[0], ZSPHERE.shape[1], 1))
+    # this is used to set the graph color to blue
+    blue = np.array([1, 1, 1])
+    rgb = np.tile(blue, (ZSPHERE.shape[0], ZSPHERE.shape[1], 1))
 
-    # ls = LightSource()
-    # illuminated_surface = ls.shade_rgb(rgb, ZSPHERE)
+    ls = LightSource(azdeg=azimuth, altdeg=elevation, hsv_min_val=0, hsv_max_val=1, hsv_min_sat=1, hsv_max_sat=0)
+    illuminated_surface = ls.shade_rgb(rgb, ZSPHERE)
 
     # Plot:
     ax.plot_surface(x, y, z,  rstride=1, cstride=1, \
-                    color=(1, 1, 1), linewidth=0,
-                    #color=(1, 1, 0.25), linewidth=0, #facecolors=illuminated_surface,
+                    color='lightblue', 
+                    linewidth=0, facecolors=illuminated_surface,
                     alpha=alpha_sphere, antialiased=True, edgecolor='none', zorder=z_order_sphere)
 
     # initial point
@@ -161,7 +160,7 @@ def decorate_3d(ax, epsilon, q0=None, elevation=elevation__, azimuth=azimuth__):
         cam = get_cam(elevation, azimuth, dist__)
         ps = x*cam[0]+y*cam[1]+z*cam[2]
         if ps>0: # back
-            zo = z_order_q0 - delta_zo_back
+            zo = -z_order_q0 # - delta_zo_back
             al = 0.5
         else:
             zo = z_order_q0
@@ -237,9 +236,9 @@ def plot_3d(fig, x, y, z, *, color='b', linewidth=1, zorder=1, linestyle='solid'
         if (ps*ps_j<0) or (j==N-1):
             if ps>0:
                 ls = linestyle #'solid'
-                lw = linewidth #/2.0
+                lw = linewidth/3.0
                 al = 0.5
-                zo = zorder - delta_zo_back
+                zo = -zorder
             else:
                 ls = linestyle #'solid'
                 lw = linewidth
