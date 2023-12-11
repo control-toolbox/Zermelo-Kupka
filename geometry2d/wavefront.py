@@ -61,7 +61,6 @@ class WaveFront():
         return wavefronts_at_tf
      
     def compute(self, tf, αspan=None, *, label=None, save=True, reset=False, load=True):
-        # a wavefront is a dictionnary with keys: tf, label, states, alphas
         
         if (αspan is None) and (label is not None) and load:
             if (self.data is None):
@@ -83,7 +82,9 @@ class WaveFront():
             
             wavefront_left_loaded  = False
             wavefront_right_loaded = False
-            if load:
+            wavefront_left  = None
+            wavefront_right = None
+            if load and not reset:
                 #
                 wavefront_left  = self.get_from_label__(tf, 'left')
                 wavefront_right = self.get_from_label__(tf, 'right')
@@ -143,8 +144,9 @@ class WaveFront():
                 label = self.label_default
                 
             # load
-            wavrefront_loaded = False
-            if load:
+            wavefront_loaded = False
+            wavefront = None
+            if load and not reset:
                 wavefront = self.get_from_label__(tf, label)
                 wavefront_loaded = wavefront is not None
                 
@@ -206,8 +208,8 @@ class WaveFront():
             
             # plot the wavefront_loci
             geometry2d.plottings.plot_2d(figure, θ,         φ, color=color, linewidth=linewidth, zorder=zorder)
-            geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
-            geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
+            #geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
+            #geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder)
             
         return figure
     

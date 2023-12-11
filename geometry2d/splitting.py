@@ -160,19 +160,44 @@ class Splitting():
         # create a function α0 -> t(α0) that returns the splitting time
         def splitting_time__(α0):
             
-            α  = α0 % (2*np.pi)
+            α = α0 % (2*np.pi)
+            d = np.inf
+            a = None
+            t = None
             
             # get the splitting locus that contains α0
             for splitting_locus in splitting_loci:
-                αs = splitting_locus.alphas[:, 0] % (2*np.pi)
-                if (α >= min(αs)) and (α <= max(αs)):
-                    return scipy.interpolate.interp1d(αs, splitting_locus.times, kind='cubic')(α)
-                αs = splitting_locus.alphas[:, 1] % (2*np.pi)
-                if (α >= min(αs)) and (α <= max(αs)):
-                    return scipy.interpolate.interp1d(αs, splitting_locus.times, kind='cubic')(α)
                 
+                αs = splitting_locus.alphas[:, 0] % (2*np.pi)
+                if min(αs) <= α <= max(αs):
+                    return scipy.interpolate.interp1d(αs, splitting_locus.times, kind='cubic', 
+                                                      fill_value="extrapolate")(α)
+                d_ = min(abs(αs - α))
+                if d_ < d:
+                    d = d_
+                    a = αs
+                    t = splitting_locus.times
+                    
+                αs = splitting_locus.alphas[:, 1] % (2*np.pi)
+                if min(αs) <= α <= max(αs):
+                    return scipy.interpolate.interp1d(αs, splitting_locus.times, kind='cubic', 
+                                                      fill_value="extrapolate")(α)
+                
+                d_ = min(abs(αs - α))
+                if d_ < d:
+                    d = d_
+                    a = αs
+                    t = splitting_locus.times
+            
+            # interpolate with the closest splitting locus
+            if a is not None:
+                return scipy.interpolate.interp1d(a, t, kind='cubic', fill_value="extrapolate")(α)
+            else:
+                # raise en internal error
+                raise ValueError('Internal error.')
+               
             # if α0 is not in any splitting locus then throw an error
-            raise ValueError('α0 is not in any splitting locus.')
+            #raise ValueError('α0 is not in any splitting locus.')
         
         return splitting_time__
             
@@ -208,8 +233,8 @@ class Splitting():
             
             # plot the splitting locus            
             geometry2d.plottings.plot_2d(figure, θ,         φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
-            geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
-            geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            #geometry2d.plottings.plot_2d(figure, θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+            #geometry2d.plottings.plot_2d(figure, θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
         
         return figure
  

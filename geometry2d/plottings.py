@@ -17,9 +17,10 @@ z_order_sphere     = 0;  zc = 100
 z_order_conj_surf  = zc; zc = zc+1
 z_order_axes       = zc; zc = zc+1
 z_order_geodesics  = zc; zc = zc+1
-z_order_splitting  = zc; zc = zc+1
 z_order_wavefront  = zc; zc = zc+1
+z_order_ball       = z_order_wavefront
 z_order_conjugate  = zc; zc = zc+1
+z_order_splitting  = zc; zc = zc+1
 z_order_q0         = zc; zc = zc+1
 delta_zo_back = 50
 
@@ -76,8 +77,9 @@ def decorate_2d(ax, q0=None):
         r = q0[0]
         θ = q0[1]
         φ = r - np.pi/2
-        ax.plot(θ, φ, marker="o", markersize=2, 
-                markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
+        ax.plot(θ, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
+        ax.plot(θ+2*np.pi, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
+        ax.plot(θ-2*np.pi, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
         
 def init_figure_2d(q0=None, *, dpi=dpi__, figsize=figsize_2d__):
     
@@ -93,6 +95,8 @@ def init_figure_2d(q0=None, *, dpi=dpi__, figsize=figsize_2d__):
 def plot_2d(fig, θ, φ, *, color='b', linewidth=0.5, zorder=1, linestyle='solid'):
     ax = fig.axes[0]
     ax.plot(θ, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+    ax.plot(θ+2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
+    ax.plot(θ-2*np.pi, φ, color=color, linewidth=linewidth, zorder=zorder, linestyle=linestyle)
 
 def plot3d(ax, x, y, z, elevation, azimuth, color, linewidth, linestyle='solid', zorder=1):
     N = len(x)

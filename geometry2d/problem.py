@@ -21,6 +21,16 @@ class WaveFrontLocus():
     def get_data(self):
         return (self.tf, self.states.tolist(), self.alphas.tolist())
 
+class SphereLocus():
+    
+    def __init__(self, sphere_locus):
+        self.tf     = sphere_locus[0]
+        self.states = np.array(sphere_locus[1])
+        self.alphas = np.array(sphere_locus[2])
+        
+    def get_data(self):
+        return (self.tf, self.states.tolist(), self.alphas.tolist())
+
 class SplittingLocus():
     
     def __init__(self, splitting_locus):
@@ -276,7 +286,7 @@ class GeometryProblem2D():
             
             # Options
             opt = nt.path.Options(Display='off', \
-                                  MaxStepSizeHomPar=0.05, \
+                                  MaxStepSizeHomPar=0.01, \
                                   MaxIterCorrection=10);
         
             # Initial solution
