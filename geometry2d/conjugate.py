@@ -16,7 +16,28 @@ class Conjugate():
         self.color_surface = 'r'
         self.alpha_surface = 0.4
         self.zorder_surface = geometry2d.plottings.z_order_conj_surf
-        
+
+    def exists_from_label(self, label):
+        # check if the data exists
+        if self.data is None:
+            return False
+        if not self.data.contains(self.data_name):
+            return False
+        if not label in self.data.get(self.data_name).keys():
+            return False
+        return True
+
+    def get_from_label(self, label):
+        if self.data is not None and self.data.contains(self.data_name):
+            if self.exists_from_label(label):
+                return geometry2d.problem.ConjugateLocus(self.data.get(self.data_name)[label])
+        return None
+    
+    def remove_from_label(self, label):
+        if self.data is not None and self.data.contains(self.data_name):
+            if self.exists_from_label(label):
+                self.data.get(self.data_name).pop(label)
+                
     def compute(self, αspan=None, *, label=None, save=True, reset=False, load=True):
         
         # # if αspan is None then label must be None otherwise raise an error
@@ -34,8 +55,18 @@ class Conjugate():
                 # return that the data does not contain the label
                 raise ValueError('The data dictionary does not contain the label.')
             # get the conjugate locus and return it
-            return geometry2d.problem.ConjugateLocus(self.data.get(self.data_name)[label])
+            return self.get_from_label(label)
 
+        if reset:
+            if label is not None:
+                self.remove_from_label(label)
+            else:
+                if αspan is None:
+                    self.remove_from_label('left')
+                    self.remove_from_label('right')
+                else:
+                    self.remove_from_label(self.label_default)
+                    
         # if data is None then force save to False
         if self.data is None:
             save = False
@@ -46,55 +77,45 @@ class Conjugate():
         # and then return a list of the computed conjugate loci
         if αspan is None:
             
+            conjugate_left_loaded = False
+            conjugate_right_loaded = False
             if load:
-                
-                # get the data
-                if self.data.contains(self.data_name) and not reset:
-                    data_conjugate_locus = self.data.get(self.data_name)
-                else:
-                    data_conjugate_locus = {}
-                    
-                # load the data
-                if 'left' in data_conjugate_locus:
-                    conjugate_locus_left  = geometry2d.problem.ConjugateLocus(data_conjugate_locus['left'])
-                else:
-                    conjugate_locus_left  = None
-                if 'right' in data_conjugate_locus:
-                    conjugate_locus_right = geometry2d.problem.ConjugateLocus(data_conjugate_locus['right'])
-                else:
-                    conjugate_locus_right = None
+                conjugate_left_loaded  = self.exists_from_label('left')
+                conjugate_right_loaded = self.exists_from_label('right')
+                conjugate_left  = self.get_from_label('left')
+                conjugate_right = self.get_from_label('right')
             
             # gap between the left and right parts of the conjugate locus
             gap = 1e-2
             
             # right part
-            α0  = -np.pi/2+gap
-            αf  =  np.pi/2-gap
-            if conjugate_locus_right is None or reset:
-                conjugate_locus_right = self.problem.conjugate_locus(α0, αf)
+            if not conjugate_right_loaded:
+                α0  = -np.pi/2+gap
+                αf  =  np.pi/2-gap
+                conjugate_right = self.problem.conjugate_locus(α0, αf)
             
             # left part
-            α0  = 1*np.pi/2+gap
-            αf  = 3*np.pi/2-gap
-            if conjugate_locus_left is None or reset:
-                conjugate_locus_left = self.problem.conjugate_locus(α0, αf)
+            if not conjugate_left_loaded:
+                α0  = 1*np.pi/2+gap
+                αf  = 3*np.pi/2-gap
+                conjugate_left = self.problem.conjugate_locus(α0, αf)
         
             # save the data
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_conjugate_locus = self.data.get(self.data_name)
                 else:
                     data_conjugate_locus = {}
                     
                 # update the data
-                data_conjugate_locus['left']  = conjugate_locus_left.get_data()
-                data_conjugate_locus['right'] = conjugate_locus_right.get_data()
+                data_conjugate_locus['left']  = conjugate_left.get_data()
+                data_conjugate_locus['right'] = conjugate_right.get_data()
                 self.data.update({self.data_name: data_conjugate_locus})
                 
             # return the list of the computed conjugate loci
-            return [conjugate_locus_left, conjugate_locus_right]
+            return [conjugate_left, conjugate_right]
         
         # if αspan is not None then compute the conjugate locus for the given αspan
         # then save the data in the data dictionary if save is True
@@ -106,37 +127,32 @@ class Conjugate():
             
             # load
             if load:
-
-                # get the data
-                if self.data.contains(self.data_name) and not reset:
-                    data_conjugate_locus = self.data.get(self.data_name)
+                if self.exists_from_label(label):
+                    conjugate = self.get_from_label(label)
                 else:
-                    data_conjugate_locus = {}
-                # load the data
-                if label in data_conjugate_locus:
-                    conjugate_locus = geometry2d.problem.ConjugateLocus(data_conjugate_locus[label])
-                else:
-                    conjugate_locus = None
+                    conjugate = None
+            else:
+                conjugate = None
             
             # compute the conjugate locus
-            if conjugate_locus is None or reset:
-                conjugate_locus = self.problem.conjugate_locus(float(αspan[0]), float(αspan[1]))
+            if conjugate is None:
+                conjugate = self.problem.conjugate_locus(float(αspan[0]), float(αspan[1]))
             
             # save the data
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_conjugate_locus = self.data.get(self.data_name)
                 else:
                     data_conjugate_locus = {}
                     
                 # save the data
-                data_conjugate_locus[label] = conjugate_locus.get_data()
+                data_conjugate_locus[label] = conjugate.get_data()
                 self.data.update({self.data_name: data_conjugate_locus})
                 
             # return the computed conjugate locus
-            return conjugate_locus
+            return conjugate
         
     def conjugate_time(self, conjugate_loci=None):
         

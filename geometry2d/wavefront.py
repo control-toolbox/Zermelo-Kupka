@@ -59,8 +59,27 @@ class WaveFront():
                     # the key is the label and the value is the locus
                     wavefronts_at_tf[w['label']] = w['locus']
         return wavefronts_at_tf
+    
+    def remove_from_label__(self, tf, label):
+        if self.data is not None and self.data.contains(self.data_name):
+            wavefronts = self.data.get(self.data_name)
+            for w in wavefronts:
+                w['locus'] = geometry2d.problem.WaveFrontLocus(w['locus'])
+                if w['label'] == label and abs(w['locus'].tf - tf) < 1e-10:
+                    wavefronts.remove(w)
+                    break
+            self.data.update({self.data_name: wavefronts})
+            
+    def remove_from_tf(self, tf):
+        if self.data is not None and self.data.contains(self.data_name):
+            wavefronts = self.data.get(self.data_name)
+            for w in wavefronts:
+                w['locus'] = geometry2d.problem.WaveFrontLocus(w['locus'])
+                if abs(w['locus'].tf - tf) < 1e-10:
+                    wavefronts.remove(w)
+            self.data.update({self.data_name: wavefronts})
      
-    def compute(self, tf, αspan=None, *, label=None, save=True, reset=False, load=True):
+    def compute(self, tf, αspan=None, *, label=None, save=True, reset=False, load=True, options=None):
         
         if (αspan is None) and (label is not None) and load:
             if (self.data is None):
@@ -73,6 +92,13 @@ class WaveFront():
             # get the wavefront and return it
             return self.get_from_label__(tf, label)
         
+        # if reset is True then we remove the wavefronts at tf if they exist
+        if reset:
+            if label is None:
+                self.remove_from_tf(tf)
+            else:
+                self.remove_from_label__(tf, label)
+        
         # if data is None then force save to False
         if self.data is None:
             save = False
@@ -84,15 +110,10 @@ class WaveFront():
             wavefront_right_loaded = False
             wavefront_left  = None
             wavefront_right = None
-            if load and not reset:
-                #
+            if load:
                 wavefront_left  = self.get_from_label__(tf, 'left')
                 wavefront_right = self.get_from_label__(tf, 'right')
-                
-                # if wavefront_left_is_loaded then indicate it
                 wavefront_left_loaded = wavefront_left is not None
-                
-                # if wavefront_right_is_loaded then indicate it
                 wavefront_right_loaded = wavefront_right is not None
                 
             # gap between the left and right parts of the conjugate locus
@@ -101,22 +122,22 @@ class WaveFront():
             # right part
             α0  = -np.pi/2+gap
             αf  =  np.pi/2-gap
-            if wavefront_right is None or reset:
-                w = self.problem.wavefront(tf, α0, αf)
+            if wavefront_right is None:
+                w = self.problem.wavefront(tf, α0, αf, options=options)
                 wavefront_right = {'label':'right', 'locus':w}
                 
             # left part
             α0  = 1*np.pi/2+gap
             αf  = 3*np.pi/2-gap
-            if wavefront_left is None or reset:
-                w = self.problem.wavefront(tf, α0, αf)
+            if wavefront_left is None:
+                w = self.problem.wavefront(tf, α0, αf, options=options)
                 wavefront_left = {'label':'left', 'locus':w}
                 
             # save the data
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_wavefronts = self.data.get(self.data_name)
                 else:
                     data_wavefronts = []
@@ -146,20 +167,20 @@ class WaveFront():
             # load
             wavefront_loaded = False
             wavefront = None
-            if load and not reset:
+            if load:
                 wavefront = self.get_from_label__(tf, label)
                 wavefront_loaded = wavefront is not None
                 
             # compute
-            if wavefront is None or reset:
-                w = self.problem.wavefront(tf, αspan[0], αspan[1])
+            if wavefront is None:
+                w = self.problem.wavefront(tf, αspan[0], αspan[1], options=options)
                 wavefront = {'label':label, 'locus':w}
                 
             # save
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_wavefronts = self.data.get(self.data_name)
                 else:
                     data_wavefronts = []
@@ -323,9 +344,9 @@ class WaveFront():
         return figure
         
     #
-    def get_data_from_self_intersections(self, tf, curve, αs):
+    def get_data_from_self_intersections(self, tf, curve, αs, *, modulo=None):
         #
-        xxs = geometry2d.utils.get_self_intersections(curve)
+        xxs = geometry2d.utils.get_self_intersections(curve, modulo=modulo)
         intersections = []
         for xx in xxs:    
             x     = xx.get('x')

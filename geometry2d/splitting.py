@@ -30,7 +30,12 @@ class Splitting():
                 return geometry2d.problem.SplittingLocus(self.data.get(self.data_name)[label])
         return None
     
-    def compute(self, y, αspan=None, *, label=None, save=True, reset=False, load=True):
+    def remove_from_label(self, label):
+        if self.data is not None and self.data.contains(self.data_name):
+            if self.exists_from_label(label):
+                self.data.get(self.data_name).pop(label)
+    
+    def compute(self, y, αspan=None, *, label=None, save=True, reset=False, load=True, options=None):
         # y is a self-intersection data of the wavefront
         # y[label] = (tf, α1, α2, q)
         
@@ -45,6 +50,16 @@ class Splitting():
             # get the wavefront and return it
             return self.get_from_label__(label)
         
+        if reset:
+            if label is not None:
+                self.remove_from_label(label)
+            else:
+                if αspan is None:
+                    self.remove_from_label('left')
+                    self.remove_from_label('right')
+                else:
+                    self.remove_from_label(self.label_default)
+                
         # if data is None then force save to False
         if self.data is None:
             save = False
@@ -71,30 +86,30 @@ class Splitting():
                 raise ValueError('y must contain the keys "left" and "right".')
             
             # right part
-            if not splitting_right_loaded or reset:
+            if not splitting_right_loaded:
                 tf = y['right'][0]
                 α1 = y['right'][1]
                 α2 = y['right'][2]
                 q  = y['right'][3]
                 α0  = 0*np.pi/2+gap
                 αf  = 1*np.pi/2-gap
-                splitting_right = self.problem.splitting_locus(q, α1, tf, α2, α0, αf)
+                splitting_right = self.problem.splitting_locus(q, α1, tf, α2, α0, αf, options=options)
                 
             # left part
-            if not splitting_left_loaded or reset:
+            if not splitting_left_loaded:
                 tf = y['left'][0]
                 α1 = y['left'][1]
                 α2 = y['left'][2]
                 q  = y['left'][3]
                 α0  = 1*np.pi/2+gap
                 αf  = 2*np.pi/2-gap
-                splitting_left = self.problem.splitting_locus(q, α2, tf, α1, α0, αf)
+                splitting_left = self.problem.splitting_locus(q, α2, tf, α1, α0, αf, options=options)
                 
             # save the data
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_splitting_locus = self.data.get(self.data_name)
                 else:
                     data_splitting_locus = {}
@@ -110,10 +125,6 @@ class Splitting():
         
         else:
             
-            # if αspan is None then raise an error
-            if αspan is None:
-                raise ValueError('You need to provide an αspan.')
-            
             if label is None:
                 label = self.label_default
                 
@@ -123,22 +134,24 @@ class Splitting():
                     splitting = self.get_from_label(label)
                 else:
                     splitting = None
+            else:
+                splitting = None
                 
             # compute
-            if splitting is None or reset:
+            if splitting is None:
                 tf = y[0]
                 α1 = y[1]
                 α2 = y[2]
                 q  = y[3]
                 α0 = αspan[0]
                 αf = αspan[1]
-                splitting = self.problem.splitting_locus(q, α1, tf, α2, α0, αf)
+                splitting = self.problem.splitting_locus(q, α1, tf, α2, α0, αf, options=options)
             
             # save
             if save:
                 
                 # get the data
-                if self.data.contains(self.data_name) and not reset:
+                if self.data.contains(self.data_name):
                     data_splitting_locus = self.data.get(self.data_name)
                 else:
                     data_splitting_locus = {}

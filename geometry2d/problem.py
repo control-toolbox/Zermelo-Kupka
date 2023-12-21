@@ -45,7 +45,7 @@ class SplittingLocus():
 class GeometryProblem2D():
     
     def __init__(self, name, Hamiltonian, metric, initial_time, initial_point, data, 
-                 steps_for_geodesics=100):
+                 steps_for_geodesics=100, modulo=None):
         
         # ----------------------------------------------------------------------------------
         self.name = name
@@ -56,6 +56,7 @@ class GeometryProblem2D():
         self.data = data
         self.steps_for_geodesics = steps_for_geodesics
         self.epsilon = 1.0 # Sphere
+        self.modulo  = modulo
         
         # ----------------------------------------------------------------------------------
         # Hamiltonian exponential map and its derivatives
@@ -278,16 +279,17 @@ class GeometryProblem2D():
                                           full=True)(wavefront_eq__)
         
         # Function to compute wavefront at time tf, q0 being fixed
-        def wavefront(tf, α0, αf):
+        def wavefront(tf, α0, αf, *, options=None):
         
             #
             t0     = self.initial_time
             q0     = self.initial_point
             
             # Options
-            opt = nt.path.Options(Display='off', \
-                                  MaxStepSizeHomPar=0.01, \
-                                  MaxIterCorrection=10);
+            if options is None:
+                opt = nt.path.Options(Display='off', MaxStepSizeHomPar=0.01, MaxIterCorrection=10)
+            else:
+                opt = options
         
             # Initial solution
             p0     = self.covector(q0, α0)
@@ -330,8 +332,12 @@ class GeometryProblem2D():
             q1, _ = self.extremal(t0, q0, self.covector(q0, a1), t)
             q2, _ = self.extremal(t0, q0, self.covector(q0, a2), t)
             eq    = np.zeros(4)
-            eq[0:2] = q-q1
-            eq[2:4] = q-q2
+            if self.modulo is None:
+                eq[0:2] = q - q1
+                eq[2:4] = q - q2
+            else:
+                eq[0:2] = q - (q1 % modulo)
+                eq[2:4] = q - (q2 % modulo)
             return eq
         
         # Derivative
@@ -349,22 +355,28 @@ class GeometryProblem2D():
                                                      (a2, da2)), \
                                     (t, dt))
             eq, deq      = np.zeros(4), np.zeros(4)
-            eq[0:2], deq[0:2] = q-q1, dq-dq1
-            eq[2:4], deq[2:4] = q-q2, dq-dq2
+            if modulo is None:
+                eq[0:2], deq[0:2] = q-q1, dq-dq1
+                eq[2:4], deq[2:4] = q-q2, dq-dq2
+            else:
+                eq[0:2], deq[0:2] = q-(q1 % modulo), dq-dq1
+                eq[2:4], deq[2:4] = q-(q2 % modulo), dq-dq2
             return eq, deq        
         
         split_eq__ = nt.tools.tensorize(dsplit_eq__, tvars=(1, 2), \
                                 full=True)(split_eq__)
         
         # Function to compute the splitting locus
-        def splitting_locus(q, a1, t, a2, α0, αf):
+        def splitting_locus(q, a1, t, a2, α0, αf, *, options=None):
        
             t0     = self.initial_time
             q0     = self.initial_point 
             
             # Options
-            opt  = nt.path.Options(MaxStepSizeHomPar=0.05, \
-                                   Display='off');
+            if options is None:
+                opt  = nt.path.Options(MaxStepSizeHomPar=0.05, Display='off')
+            else:
+                opt = options
         
             # Initial solution
             y0 = np.array([t, a1, q[0], q[1]])

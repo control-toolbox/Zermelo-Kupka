@@ -162,7 +162,7 @@ class Geodesic():
              azimuth=geometry2d.plottings.azimuth__, 
              elevation=geometry2d.plottings.elevation__, 
              color=None, linewidth=None, zorder=None, linestyle='solid',
-             figure=None, dpi=None, figsize=None):
+             figure=None, dpi=None, figsize=None, force=False):
         
         # error if alphas is not None and N is not None
         if (not alphas is None) and (not N is None):
@@ -220,10 +220,10 @@ class Geodesic():
         list_time  = list([])
         list_α0    = list([])
         for α0 in alphas:
-            if (np.abs(α0 % (2*np.pi) - 0*np.pi/2) > 1e-8) and \
-            (np.abs(α0 % (2*np.pi) - 1*np.pi/2) > 1e-8) and    \
-            (np.abs(α0 % (2*np.pi) - 2*np.pi/2) > 1e-8) and    \
-            (np.abs(α0 % (2*np.pi) - 3*np.pi/2) > 1e-8):
+            if  (np.abs(α0 % (2*np.pi) - 0*np.pi/2) > 1e-8) and     \
+                (np.abs(α0 % (2*np.pi) - 1*np.pi/2) > 1e-8) and     \
+                (np.abs(α0 % (2*np.pi) - 2*np.pi/2) > 1e-8) and     \
+                (np.abs(α0 % (2*np.pi) - 3*np.pi/2) > 1e-8) or force:
                 time = length*tf_fun(α0)
                 q = self.compute(time, α0)
                 list_state.append(q)

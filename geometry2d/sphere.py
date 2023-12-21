@@ -61,6 +61,25 @@ class Sphere():
                     spheres_at_tf[s['label']] = s['locus']
         return spheres_at_tf
     
+    def remove_from_label__(self, tf, label):
+        if self.data is not None and self.data.contains(self.data_name):
+            spheres = self.data.get(self.data_name)
+            for s in spheres:
+                s['locus'] = geometry2d.problem.SphereLocus(s['locus'])
+                if s['label'] == label and abs(s['locus'].tf - tf) < 1e-10:
+                    spheres.remove(s)
+                    break
+            self.data.update({self.data_name: spheres})
+            
+    def remove_from_tf(self, tf):
+        if self.data is not None and self.data.contains(self.data_name):
+            spheres = self.data.get(self.data_name)
+            for s in spheres:
+                s['locus'] = geometry2d.problem.SphereLocus(s['locus'])
+                if abs(s['locus'].tf - tf) < 1e-10:
+                    spheres.remove(s)
+            self.data.update({self.data_name: spheres})
+    
     def compute_sphere_locus__(self, wavefront_locus, tf):
         
         states = wavefront_locus.states
@@ -80,6 +99,12 @@ class Sphere():
         return geometry2d.problem.SphereLocus((tf, states_sphere, alphas))
     
     def compute(self, tf, *, label=None, save=True, reset=False, load=True):
+        
+        if reset:
+            if label is None:
+                self.remove_from_tf(tf)
+            else:
+                self.remove_from_label__(tf, label)
         
         # if data is None then force save to False
         if self.data is None:
@@ -119,7 +144,7 @@ class Sphere():
         if save:
          
             # get the data
-            if self.data.contains(self.data_name) and not reset:
+            if self.data.contains(self.data_name):
                 data_spheres = self.data.get(self.data_name)
             else:
                 data_spheres = []  
