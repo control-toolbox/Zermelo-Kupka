@@ -19,7 +19,7 @@
 !   variations   of useful results: h
 !   with respect to varying inputs: p x
 !   RW status of diff variables: h:out p:in x:in
-! Kepler
+! Landau
 SUBROUTINE HFUN_D_D_D(x, xd1, xd0, xd, p, pd1, pd0, pd, c, h, hd, hdd, &
 & hddd)
   IMPLICIT NONE
@@ -33,19 +33,20 @@ SUBROUTINE HFUN_D_D_D(x, xd1, xd0, xd, p, pd1, pd0, pd, c, h, hd, hdd, &
   DOUBLE PRECISION, INTENT(OUT) :: hddd
 ! local variables
   DOUBLE PRECISION :: r, th, pr, pth
-  DOUBLE PRECISION :: rd1, prd1, pthd1
-  DOUBLE PRECISION :: rd0, prd0, pthd0
-  DOUBLE PRECISION :: rd, prd, pthd
-  DOUBLE PRECISION :: alpha, delta, beta, nu1, nu2, mu1, mu2, m2
-  DOUBLE PRECISION :: betad1, nu1d1, m2d1
-  DOUBLE PRECISION :: betad0, nu1d0, mu1d0, mu2d0, m2d0
-  DOUBLE PRECISION :: betad0d, nu1d0d, mu1d0d, mu2d0d, m2d0d
-  DOUBLE PRECISION :: betad, nu1d, mu1d, mu2d, m2d
-  DOUBLE PRECISION :: betadd0, nu1dd0, mu1dd0, mu2dd0, m2dd0
-  DOUBLE PRECISION :: betadd, nu1dd, mu1dd, mu2dd, m2dd
-  DOUBLE PRECISION :: betaddd, nu1ddd, mu1ddd, mu2ddd, m2ddd
+  DOUBLE PRECISION :: rd1, thd1, prd1, pthd1
+  DOUBLE PRECISION :: rd0, thd0, prd0, pthd0
+  DOUBLE PRECISION :: rd, thd, prd, pthd
+  DOUBLE PRECISION :: m2, a, g1, g2, g3, cr, sr, ct, st, mu1, mu2
+  DOUBLE PRECISION :: m2d1, crd1, srd1, ctd1, std1
+  DOUBLE PRECISION :: m2d0, crd0, srd0, ctd0, std0, mu1d0, mu2d0
+  DOUBLE PRECISION :: m2d0d, crd0d, srd0d, ctd0d, std0d, mu1d0d, mu2d0d
+  DOUBLE PRECISION :: m2d, crd, srd, ctd, std, mu1d, mu2d
+  DOUBLE PRECISION :: m2dd0, crdd0, srdd0, ctdd0, stdd0, mu1dd0, mu2dd0
+  DOUBLE PRECISION :: m2dd, crdd, srdd, ctdd, stdd, mu1dd, mu2dd
+  DOUBLE PRECISION :: m2ddd, crddd, srddd, ctddd, stddd, mu1ddd, mu2ddd
   INTRINSIC COS
   INTRINSIC SIN
+  REAL :: cs
   INTRINSIC SQRT
   DOUBLE PRECISION :: arg1
   DOUBLE PRECISION :: arg1d1
@@ -69,6 +70,9 @@ SUBROUTINE HFUN_D_D_D(x, xd1, xd0, xd, p, pd1, pd0, pd, c, h, hd, hdd, &
   rd0 = xd0(1)
   rd1 = xd1(1)
   r = x(1)
+  thd = xd(2)
+  thd0 = xd0(2)
+  thd1 = xd1(2)
   th = x(2)
   prd = pd(1)
   prd0 = pd0(1)
@@ -78,40 +82,105 @@ SUBROUTINE HFUN_D_D_D(x, xd1, xd0, xd, p, pd1, pd0, pd, c, h, hd, hdd, &
   pthd0 = pd0(2)
   pthd1 = pd1(2)
   pth = p(2)
-  alpha = c(1)
-  delta = c(2)
-  betaddd = delta*rd*rd0*rd1*SIN(r)
-  betadd = -(delta*rd*rd0*COS(r))
-  betadd0 = -(delta*rd*rd1*COS(r))
-  betad = -(delta*rd*SIN(r))
-  betad0d = -(delta*rd0*rd1*COS(r))
-  betad0 = -(delta*rd0*SIN(r))
-  betad1 = -(delta*rd1*SIN(r))
-  beta = delta*COS(r)
-  nu1ddd = alpha*rd*rd0*rd1*COS(r)
-  nu1dd = alpha*rd*rd0*SIN(r)
-  nu1dd0 = alpha*rd*rd1*SIN(r)
-  nu1d = -(alpha*rd*COS(r))
-  nu1d0d = alpha*rd0*rd1*SIN(r)
-  nu1d0 = -(alpha*rd0*COS(r))
-  nu1d1 = -(alpha*rd1*COS(r))
-  nu1 = -(alpha*SIN(r))
-  nu2 = 1d0
-  mu1ddd = betaddd*nu1 + betadd*nu1d1 + betadd0*nu1d0 + betad*nu1d0d + &
-&   betad0d*nu1d + betad0*nu1dd0 + betad1*nu1dd + beta*nu1ddd
-  mu1dd = betadd*nu1 + betad*nu1d0 + betad0*nu1d + beta*nu1dd
-  mu1dd0 = betadd0*nu1 + betad*nu1d1 + betad1*nu1d + beta*nu1dd0
-  mu1d = betad*nu1 + beta*nu1d
-  mu1d0d = betad0d*nu1 + betad0*nu1d1 + betad1*nu1d0 + beta*nu1d0d
-  mu1d0 = betad0*nu1 + beta*nu1d0
-  mu1 = beta*nu1
-  mu2ddd = nu2*betaddd
-  mu2dd = nu2*betadd
-  mu2dd0 = nu2*betadd0
-  mu2d = nu2*betad
-  mu2d0d = nu2*betad0d
-  mu2d0 = nu2*betad0
-  mu2 = beta*nu2
+  crddd = rd*rd0*rd1*SIN(r)
+  crdd = -(rd*rd0*COS(r))
+  crdd0 = -(rd*rd1*COS(r))
+  crd = -(rd*SIN(r))
+  crd0d = -(rd0*rd1*COS(r))
+  crd0 = -(rd0*SIN(r))
+  crd1 = -(rd1*SIN(r))
+  cr = COS(r)
+  srddd = -(rd*rd0*rd1*COS(r))
+  srdd = -(rd*rd0*SIN(r))
+  srdd0 = -(rd*rd1*SIN(r))
+  srd = rd*COS(r)
+  srd0d = -(rd0*rd1*SIN(r))
+  srd0 = rd0*COS(r)
+  srd1 = rd1*COS(r)
+  sr = SIN(r)
+  ctddd = thd*thd0*thd1*SIN(th)
+  ctdd = -(thd*thd0*COS(th))
+  ctdd0 = -(thd*thd1*COS(th))
+  ctd = -(thd*SIN(th))
+  ctd0d = -(thd0*thd1*COS(th))
+  ctd0 = -(thd0*SIN(th))
+  ctd1 = -(thd1*SIN(th))
+  ct = COS(th)
+  stddd = -(thd*thd0*thd1*COS(th))
+  stdd = -(thd*thd0*SIN(th))
+  stdd0 = -(thd*thd1*SIN(th))
+  std = thd*COS(th)
+  std0d = -(thd0*thd1*SIN(th))
+  std0 = thd0*COS(th)
+  std1 = thd1*COS(th)
+  st = SIN(th)
+  g1 = c(1)
+  g2 = c(2)
+  g3 = c(3)
+  a = c(4)
+  mu1ddd = a*g1*cs*srddd + (g2-g3)*((ctddd*st+ctdd*std1+ctdd0*std0+ctd*&
+&   std0d+ctd0d*std+ctd0*stdd0+ctd1*stdd+ct*stddd)*sr+(ctdd*st+ctd*std0+&
+&   ctd0*std+ct*stdd)*srd1+(ctdd0*st+ctd*std1+ctd1*std+ct*stdd0)*srd0+(&
+&   ctd*st+ct*std)*srd0d+(ctd0d*st+ctd0*std1+ctd1*std0+ct*std0d)*srd+(&
+&   ctd0*st+ct*std0)*srdd0+(ctd1*st+ct*std1)*srdd+ct*st*srddd) - a*((g2*&
+&   2*(ctd0d*ctd+ctd0*ctdd0+ctd1*ctdd+ct*ctddd)+g3*2*(std0d*std+std0*&
+&   stdd0+std1*stdd+st*stddd))*cr*sr+(g2*2*(ctd0*ctd+ct*ctdd)+g3*2*(std0&
+&   *std+st*stdd))*(crd1*sr+cr*srd1)+(g2*2*(ctd1*ctd+ct*ctdd0)+g3*2*(&
+&   std1*std+st*stdd0))*(crd0*sr+cr*srd0)+(g2*2*ct*ctd+g3*2*st*std)*(&
+&   crd0d*sr+crd0*srd1+crd1*srd0+cr*srd0d)+(g2*2*(ctd1*ctd0+ct*ctd0d)+g3&
+&   *2*(std1*std0+st*std0d))*(crd*sr+cr*srd)+(g2*2*ct*ctd0+g3*2*st*std0)&
+&   *(crdd0*sr+crd*srd1+crd1*srd+cr*srdd0)+(g2*2*ct*ctd1+g3*2*st*std1)*(&
+&   crdd*sr+crd*srd0+crd0*srd+cr*srdd)+(g2*ct**2+g3*st**2)*(crddd*sr+&
+&   crdd*srd1+crdd0*srd0+crd*srd0d+crd0d*srd+crd0*srdd0+crd1*srdd+cr*&
+&   srddd))
+  mu1dd = a*g1*cs*srdd + (g2-g3)*((ctdd*st+ctd*std0+ctd0*std+ct*stdd)*sr&
+&   +(ctd*st+ct*std)*srd0+(ctd0*st+ct*std0)*srd+ct*st*srdd) - a*((g2*2*(&
+&   ctd0*ctd+ct*ctdd)+g3*2*(std0*std+st*stdd))*cr*sr+(g2*2*ct*ctd+g3*2*&
+&   st*std)*(crd0*sr+cr*srd0)+(g2*2*ct*ctd0+g3*2*st*std0)*(crd*sr+cr*srd&
+&   )+(g2*ct**2+g3*st**2)*(crdd*sr+crd*srd0+crd0*srd+cr*srdd))
+  mu1dd0 = a*g1*cs*srdd0 + (g2-g3)*((ctdd0*st+ctd*std1+ctd1*std+ct*stdd0&
+&   )*sr+(ctd*st+ct*std)*srd1+(ctd1*st+ct*std1)*srd+ct*st*srdd0) - a*((&
+&   g2*2*(ctd1*ctd+ct*ctdd0)+g3*2*(std1*std+st*stdd0))*cr*sr+(g2*2*ct*&
+&   ctd+g3*2*st*std)*(crd1*sr+cr*srd1)+(g2*2*ct*ctd1+g3*2*st*std1)*(crd*&
+&   sr+cr*srd)+(g2*ct**2+g3*st**2)*(crdd0*sr+crd*srd1+crd1*srd+cr*srdd0)&
+&   )
+  mu1d = a*g1*cs*srd + (g2-g3)*((ctd*st+ct*std)*sr+ct*st*srd) - a*((g2*2&
+&   *ct*ctd+g3*2*st*std)*cr*sr+(g2*ct**2+g3*st**2)*(crd*sr+cr*srd))
+  mu1d0d = a*g1*cs*srd0d + (g2-g3)*((ctd0d*st+ctd0*std1+ctd1*std0+ct*&
+&   std0d)*sr+(ctd0*st+ct*std0)*srd1+(ctd1*st+ct*std1)*srd0+ct*st*srd0d)&
+&   - a*((g2*2*(ctd1*ctd0+ct*ctd0d)+g3*2*(std1*std0+st*std0d))*cr*sr+(g2&
+&   *2*ct*ctd0+g3*2*st*std0)*(crd1*sr+cr*srd1)+(g2*2*ct*ctd1+g3*2*st*&
+&   std1)*(crd0*sr+cr*srd0)+(g2*ct**2+g3*st**2)*(crd0d*sr+crd0*srd1+crd1&
+&   *srd0+cr*srd0d))
+  mu1d0 = a*g1*cs*srd0 + (g2-g3)*((ctd0*st+ct*std0)*sr+ct*st*srd0) - a*(&
+&   (g2*2*ct*ctd0+g3*2*st*std0)*cr*sr+(g2*ct**2+g3*st**2)*(crd0*sr+cr*&
+&   srd0))
+  mu1 = a*g1*cs*sr + (g2-g3)*ct*st*sr - a*(g2*ct**2+g3*st**2)*cr*sr
+  mu2ddd = a*(g2-g3)*(ctddd*st+ctdd*std1+ctdd0*std0+ctd*std0d+ctd0d*std+&
+&   ctd0*stdd0+ctd1*stdd+ct*stddd) - g1*crddd + (g3*2*(std0d*std+std0*&
+&   stdd0+std1*stdd+st*stddd)+g2*2*(ctd0d*ctd+ctd0*ctdd0+ctd1*ctdd+ct*&
+&   ctddd))*cr + (g3*2*(std0*std+st*stdd)+g2*2*(ctd0*ctd+ct*ctdd))*crd1 &
+&   + (g3*2*(std1*std+st*stdd0)+g2*2*(ctd1*ctd+ct*ctdd0))*crd0 + (g3*2*&
+&   st*std+g2*2*ct*ctd)*crd0d + (g3*2*(std1*std0+st*std0d)+g2*2*(ctd1*&
+&   ctd0+ct*ctd0d))*crd + (g3*2*st*std0+g2*2*ct*ctd0)*crdd0 + (g3*2*st*&
+&   std1+g2*2*ct*ctd1)*crdd + (g3*st**2+g2*ct**2)*crddd
+  mu2dd = a*(g2-g3)*(ctdd*st+ctd*std0+ctd0*std+ct*stdd) - g1*crdd + (g3*&
+&   2*(std0*std+st*stdd)+g2*2*(ctd0*ctd+ct*ctdd))*cr + (g3*2*st*std+g2*2&
+&   *ct*ctd)*crd0 + (g3*2*st*std0+g2*2*ct*ctd0)*crd + (g3*st**2+g2*ct**2&
+&   )*crdd
+  mu2dd0 = a*(g2-g3)*(ctdd0*st+ctd*std1+ctd1*std+ct*stdd0) - g1*crdd0 + &
+&   (g3*2*(std1*std+st*stdd0)+g2*2*(ctd1*ctd+ct*ctdd0))*cr + (g3*2*st*&
+&   std+g2*2*ct*ctd)*crd1 + (g3*2*st*std1+g2*2*ct*ctd1)*crd + (g3*st**2+&
+&   g2*ct**2)*crdd0
+  mu2d = a*(g2-g3)*(ctd*st+ct*std) - g1*crd + (g3*2*st*std+g2*2*ct*ctd)*&
+&   cr + (g3*st**2+g2*ct**2)*crd
+  mu2d0d = a*(g2-g3)*(ctd0d*st+ctd0*std1+ctd1*std0+ct*std0d) - g1*crd0d &
+&   + (g3*2*(std1*std0+st*std0d)+g2*2*(ctd1*ctd0+ct*ctd0d))*cr + (g3*2*&
+&   st*std0+g2*2*ct*ctd0)*crd1 + (g3*2*st*std1+g2*2*ct*ctd1)*crd0 + (g3*&
+&   st**2+g2*ct**2)*crd0d
+  mu2d0 = a*(g2-g3)*(ctd0*st+ct*std0) - g1*crd0 + (g3*2*st*std0+g2*2*ct*&
+&   ctd0)*cr + (g3*st**2+g2*ct**2)*crd0
+  mu2 = a*(g2-g3)*ct*st - g1*cr + (g3*st**2+g2*ct**2)*cr
   m2ddd = 2*rd*(-(rd0*2*COS(r)*rd1*SIN(r))-rd0*2*SIN(r)*rd1*COS(r))
   m2dd = 2*rd*(rd0*COS(r)**2-SIN(r)**2*rd0)
   m2dd0 = 2*rd*(rd1*COS(r)**2-SIN(r)**2*rd1)

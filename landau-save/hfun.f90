@@ -6,7 +6,7 @@ subroutine hfun(x, p, c, h)
 
     ! local variables
     double precision :: r, th, pr, pth
-    double precision :: m2, a, g1, g2, g3, cr, sr, ct, st, mu1, mu2
+    double precision :: alpha, delta, beta, nu1, nu2, mu1, mu2, m2
 
     r   = x(1)
     th  = x(2)
@@ -14,18 +14,14 @@ subroutine hfun(x, p, c, h)
     pr  = p(1)
     pth = p(2)
 
-    cr = cos(r)
-    sr = sin(r)
-    ct = cos(th)
-    st = sin(th)
+    alpha = c(1)
+    delta = c(2)
 
-    g1 = c(1)
-    g2 = c(2)
-    g3 = c(3)
-    a  = c(4)
-
-    mu1 = a*g1*cs*sr+(g2-g3)*ct*st*sr-a*(g2*ct**2+g3*st**2)*cr*sr 
-    mu2 = a*(g2-g3)*ct*st-g1*cr+(g3*st**2+g2*ct**2)*cr
+    beta = delta*cos(r)
+    nu1  = -alpha*sin(r)
+    nu2  = 1d0
+    mu1  = beta*nu1
+    mu2  = beta*nu2
 
     m2   = sin(r)**2
 

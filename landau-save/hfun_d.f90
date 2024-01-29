@@ -5,7 +5,7 @@
 !   variations   of useful results: h
 !   with respect to varying inputs: p x
 !   RW status of diff variables: h:out p:in x:in
-! Landau
+! Kepler
 SUBROUTINE HFUN_D(x, xd, p, pd, c, h, hd)
   IMPLICIT NONE
   DOUBLE PRECISION, INTENT(IN) :: x(2), p(2), c(2)
@@ -14,12 +14,11 @@ SUBROUTINE HFUN_D(x, xd, p, pd, c, h, hd)
   DOUBLE PRECISION, INTENT(OUT) :: hd
 ! local variables
   DOUBLE PRECISION :: r, th, pr, pth
-  DOUBLE PRECISION :: rd, thd, prd, pthd
-  DOUBLE PRECISION :: m2, a, g1, g2, g3, cr, sr, ct, st, mu1, mu2
-  DOUBLE PRECISION :: m2d, crd, srd, ctd, std, mu1d, mu2d
+  DOUBLE PRECISION :: rd, prd, pthd
+  DOUBLE PRECISION :: alpha, delta, beta, nu1, nu2, mu1, mu2, m2
+  DOUBLE PRECISION :: betad, nu1d, mu1d, mu2d, m2d
   INTRINSIC COS
   INTRINSIC SIN
-  REAL :: cs
   INTRINSIC SQRT
   DOUBLE PRECISION :: arg1
   DOUBLE PRECISION :: arg1d
@@ -27,30 +26,22 @@ SUBROUTINE HFUN_D(x, xd, p, pd, c, h, hd)
   DOUBLE PRECISION :: result1d
   rd = xd(1)
   r = x(1)
-  thd = xd(2)
   th = x(2)
   prd = pd(1)
   pr = p(1)
   pthd = pd(2)
   pth = p(2)
-  crd = -(rd*SIN(r))
-  cr = COS(r)
-  srd = rd*COS(r)
-  sr = SIN(r)
-  ctd = -(thd*SIN(th))
-  ct = COS(th)
-  std = thd*COS(th)
-  st = SIN(th)
-  g1 = c(1)
-  g2 = c(2)
-  g3 = c(3)
-  a = c(4)
-  mu1d = a*g1*cs*srd + (g2-g3)*((ctd*st+ct*std)*sr+ct*st*srd) - a*((g2*2&
-&   *ct*ctd+g3*2*st*std)*cr*sr+(g2*ct**2+g3*st**2)*(crd*sr+cr*srd))
-  mu1 = a*g1*cs*sr + (g2-g3)*ct*st*sr - a*(g2*ct**2+g3*st**2)*cr*sr
-  mu2d = a*(g2-g3)*(ctd*st+ct*std) - g1*crd + (g3*2*st*std+g2*2*ct*ctd)*&
-&   cr + (g3*st**2+g2*ct**2)*crd
-  mu2 = a*(g2-g3)*ct*st - g1*cr + (g3*st**2+g2*ct**2)*cr
+  alpha = c(1)
+  delta = c(2)
+  betad = -(delta*rd*SIN(r))
+  beta = delta*COS(r)
+  nu1d = -(alpha*rd*COS(r))
+  nu1 = -(alpha*SIN(r))
+  nu2 = 1d0
+  mu1d = betad*nu1 + beta*nu1d
+  mu1 = beta*nu1
+  mu2d = nu2*betad
+  mu2 = beta*nu2
   m2d = 2*SIN(r)*rd*COS(r)
   m2 = SIN(r)**2
   arg1d = 2*pr*prd + (2*pth*pthd*m2-pth**2*m2d)/m2**2
