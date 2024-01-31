@@ -80,7 +80,7 @@ def decorate_2d(ax, q0=None):
         ax.plot(θ, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
         ax.plot(θ+2*np.pi, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
         ax.plot(θ-2*np.pi, φ, marker="o", markersize=2, markeredgecolor="black", markerfacecolor="black", zorder=z_order_q0)  
-        
+    
 def init_figure_2d(q0=None, *, dpi=dpi__, figsize=figsize_2d__):
     
     fig = Figure(dpi=dpi)
